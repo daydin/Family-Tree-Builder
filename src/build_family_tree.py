@@ -46,12 +46,11 @@ def build_family_tree(people_dict):
 
         draw_all_relatives(f, person_key, person_val, set())
 
-    f.view()
+        f.view()
     # one_tree.render(filename=f'{cfib_person.id}_family_tree', directory='./family_trees', cleanup=True)
 
 
 def draw_all_relatives(f, person_key, person_val, visited):
-
     if visited is None:
         visited = set()
 
@@ -155,7 +154,6 @@ def get_all_rels(cfib_person, people=[]):
 
 trees = {}
 
-
 for cfib_person in cfib_persons:
     # todo: for each person object, search all relatives mother, father, and partners
     #  (search needs to happen in both directions, not just @type = partner but also @ corresp = person in question).
@@ -208,6 +206,6 @@ for cfib_person in cfib_persons:
                     if parent_key in el:
                         parent_val.children.add(child_key)
 
-    build_family_tree(flattened_people)
+build_family_tree(flattened_people)
 
 pass

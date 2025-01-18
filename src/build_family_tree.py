@@ -44,48 +44,66 @@ def build_family_tree(people_dict):
                     node_attr={'color': 'lightblue2', 'style': 'filled'}, strict=True)
         f.attr('node', shape='box')
 
-        draw_all_relatives(f, person_key, person_val, set())
+        draw_all_relatives(f, person_key, person_val, set(), set(), set())
 
         f.view()
     # one_tree.render(filename=f'{cfib_person.id}_family_tree', directory='./family_trees', cleanup=True)
 
 
-def draw_all_relatives(f, person_key, person_val, visited):
+def draw_all_relatives(f, person_key, person_val, visited, nodes, graph_edges):
     if visited is None:
         visited = set()
 
     if person_key in visited:
         return
+    if person_key not in nodes:
+        f.node(person_key)
+        nodes.add(person_key)
 
     visited.add(person_key)
+
+
     if person_val.partners:
         for partner_key in person_val.partners:
-            f.node(person_key)
-            f.node(partner_key)
-            f.edge(person_key, partner_key, label='', arrowhead="none", color="green")
-            with f.subgraph() as sub:
-                sub.attr(rank="same")
-                sub.node(person_key)
-                sub.node(partner_key)
-            draw_all_relatives(f, partner_key, flattened_people[partner_key], visited)
+            if (person_key, partner_key) not in graph_edges and (partner_key, person_key) not in graph_edges:
+                if partner_key not in nodes:
+                    f.node(partner_key)
+                    nodes.add(partner_key)
+                f.edge(person_key, partner_key, label='', arrowhead="none", color="green")
+                graph_edges.add((person_key, partner_key))
+                graph_edges.add((partner_key, person_key))
+                with f.subgraph() as sub:
+                    sub.attr(rank="same")
+                    sub.node(person_key)
+                    sub.node(partner_key)
+            draw_all_relatives(f, partner_key, flattened_people[partner_key], visited, nodes, graph_edges)
     if person_val.mothers:
         for mother_key in person_val.mothers:
-            f.node(mother_key)
-            f.node(person_key)
-            f.edge(mother_key, person_key, label='', color="green")
-            draw_all_relatives(f, mother_key, flattened_people[mother_key], visited)
+            if (mother_key, person_key) not in graph_edges:
+                if mother_key not in nodes:
+                    f.node(mother_key)
+                    nodes.add(mother_key)
+                f.edge(mother_key, person_key, label='', color="green")
+                graph_edges.add((mother_key, person_key))
+            draw_all_relatives(f, mother_key, flattened_people[mother_key], visited, nodes, graph_edges)
     if person_val.fathers:
         for father_key in person_val.fathers:
-            f.node(father_key)
-            f.node(person_key)
-            f.edge(father_key, person_key, label='', color="green")
-            draw_all_relatives(f, father_key, flattened_people[father_key], visited)
+            if (father_key, person_key) not in graph_edges:
+                if father_key not in nodes:
+                    f.node(father_key)
+                    nodes.add(father_key)
+                f.edge(father_key, person_key, label='', color="green")
+                graph_edges.add((father_key, person_key))
+            draw_all_relatives(f, father_key, flattened_people[father_key], visited, nodes, graph_edges)
     if person_val.children:
         for child_key in person_val.children:
-            f.node(person_key)
-            f.node(child_key)
-            f.edge(person_key, child_key, label='', color="green")
-            draw_all_relatives(f, child_key, flattened_people[child_key], visited)
+            if (person_key, child_key) not in graph_edges:
+                if child_key not in nodes:
+                    f.node(child_key)
+                    nodes.add(child_key)
+                f.edge(person_key, child_key, label='', color="green")
+                graph_edges.add((person_key, child_key))
+            draw_all_relatives(f, child_key, flattened_people[child_key], visited, nodes, graph_edges)
 
 
 def get_all_rels(cfib_person, people=[]):

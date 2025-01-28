@@ -19,7 +19,7 @@ class Person:
         self.role = role
 
 
-xml_tree = ET.parse('../data/CFIB_testData.xml')
+xml_tree = ET.parse('../data/CFIB_GenealogyData_final.xml')
 
 ns = {'': "http://www.tei-c.org/ns/1.0",
       'xml': "http://www.w3.org/XML/1998/namespace"
@@ -43,10 +43,11 @@ def build_family_tree(people_dict):
                     filename=f'{person_key}_family_tree',
                     node_attr={'color': 'lightblue2', 'style': 'filled'}, strict=True)
         f.attr('node', shape='box')
-
+        # todo: pass people_dict to be able to get people's names by dictionary lookup
         draw_all_relatives(f, person_key, person_val, set(), set(), set())
 
-        f.view()
+        if person_key == 'CFIB00169' or person_key == 'CFIB00245' or person_key == 'CFIB00762':
+            f.view()
     # one_tree.render(filename=f'{cfib_person.id}_family_tree', directory='./family_trees', cleanup=True)
 
 
@@ -131,8 +132,7 @@ def get_all_rels(cfib_person, people=[]):
     all_matches_backward_root = root.findall(f'.//persName[@corresp = "{cfib_pers_fmt}"]', namespaces=ns)
     all_matches_backward_parents = root.findall(f'.//persName[@corresp = "{cfib_pers_fmt}"]...', namespaces=ns)
     matching_person_idx = None
-    # todo: when you are doing the backward search you need to add all children of a person
-    # todo: if you match current person as a parent, then find their child, then add current_person.children = child.id
+
     for i, one_match_backward_root in enumerate(all_matches_backward_root):
         # retrieve person from the people list based on ID,
         # make sure nobody is their own parent

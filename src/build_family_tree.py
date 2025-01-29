@@ -7,8 +7,8 @@ import xml.etree.ElementTree as ET
 class Person:
     def __init__(self, mothers: Optional[list] = [], fathers: Optional[list] = [], partners: Optional[list] = [],
                  children: Optional[list] = None, forename: Optional[str] = None, surname: Optional[str] = None,
-                 id: Optional[str] = None,
-                 role: Optional[str] = None):
+                 id: Optional[str] = None, role: Optional[str] = None, date_of_birth: Optional[str] = None,
+                 date_of_death: Optional[str] = None):
         self.mothers = mothers
         self.fathers = fathers
         self.partners = partners
@@ -17,9 +17,11 @@ class Person:
         self.surname = surname
         self.id = id
         self.role = role
+        self.date_of_birth = date_of_birth
+        self.date_of_death = date_of_death
 
 
-xml_tree = ET.parse('../data/CFIB_GenealogyData_final.xml')
+xml_tree = ET.parse('../data/CFIB_testData.xml')
 
 ns = {'': "http://www.tei-c.org/ns/1.0",
       'xml': "http://www.w3.org/XML/1998/namespace"
@@ -29,8 +31,10 @@ root = xml_tree.getroot()
 cfib_persons = root.findall(".//listPerson/person[@xml:id]", namespaces=ns)
 i = 0
 
+people_dict = {}
 
-def build_family_tree(people_dict):
+
+def build_family_tree():
     """
     Build a family tree for a given person.
 
@@ -46,8 +50,8 @@ def build_family_tree(people_dict):
         # todo: pass people_dict to be able to get people's names by dictionary lookup
         draw_all_relatives(f, person_key, person_val, set(), set(), set())
 
-        if person_key == 'CFIB00169' or person_key == 'CFIB00245' or person_key == 'CFIB00762':
-            f.view()
+        # if person_key == 'CFIB00169' or person_key == 'CFIB00245' or person_key == 'CFIB00762':
+        f.view()
     # one_tree.render(filename=f'{cfib_person.id}_family_tree', directory='./family_trees', cleanup=True)
 
 
@@ -58,17 +62,35 @@ def draw_all_relatives(f, person_key, person_val, visited, nodes, graph_edges):
     if person_key in visited:
         return
     if person_key not in nodes:
-        f.node(person_key)
+        label = ''
+        if people_dict[person_key].forename:
+            label += people_dict[person_key].forename + ' '
+        if people_dict[person_key].surname:
+            label += people_dict[person_key].surname + '\n'
+        if people_dict[person_key].date_of_birth:
+            label += people_dict[person_key].date_of_birth + '\n'
+        if people_dict[person_key].date_of_death:
+            label += people_dict[person_key].date_of_death
+
+        f.node(person_key, label=f"{label}")
         nodes.add(person_key)
 
     visited.add(person_key)
-
 
     if person_val.partners:
         for partner_key in person_val.partners:
             if (person_key, partner_key) not in graph_edges and (partner_key, person_key) not in graph_edges:
                 if partner_key not in nodes:
-                    f.node(partner_key)
+                    label = ''
+                    if people_dict[partner_key].forename:
+                        label += people_dict[partner_key].forename + ' '
+                    if people_dict[partner_key].surname:
+                        label += people_dict[partner_key].surname + '\n'
+                    if people_dict[partner_key].date_of_birth:
+                        label += people_dict[partner_key].date_of_birth + '\n'
+                    if people_dict[partner_key].date_of_death:
+                        label += people_dict[partner_key].date_of_death
+                    f.node(partner_key, label=f"{label}")
                     nodes.add(partner_key)
                 f.edge(person_key, partner_key, label='', arrowhead="none", color="green")
                 graph_edges.add((person_key, partner_key))
@@ -77,34 +99,61 @@ def draw_all_relatives(f, person_key, person_val, visited, nodes, graph_edges):
                     sub.attr(rank="same")
                     sub.node(person_key)
                     sub.node(partner_key)
-            draw_all_relatives(f, partner_key, flattened_people[partner_key], visited, nodes, graph_edges)
+            draw_all_relatives(f, partner_key, people_dict[partner_key], visited, nodes, graph_edges)
     if person_val.mothers:
         for mother_key in person_val.mothers:
             if (mother_key, person_key) not in graph_edges:
                 if mother_key not in nodes:
-                    f.node(mother_key)
+                    label = ''
+                    if people_dict[mother_key].forename:
+                        label += people_dict[mother_key].forename + ' '
+                    if people_dict[mother_key].surname:
+                        label += people_dict[mother_key].surname + '\n'
+                    if people_dict[mother_key].date_of_birth:
+                        label += people_dict[mother_key].date_of_birth + '\n'
+                    if people_dict[mother_key].date_of_death:
+                        label += people_dict[mother_key].date_of_death
+                    f.node(mother_key, label=f"{label}")
                     nodes.add(mother_key)
                 f.edge(mother_key, person_key, label='', color="green")
                 graph_edges.add((mother_key, person_key))
-            draw_all_relatives(f, mother_key, flattened_people[mother_key], visited, nodes, graph_edges)
+            draw_all_relatives(f, mother_key, people_dict[mother_key], visited, nodes, graph_edges)
     if person_val.fathers:
         for father_key in person_val.fathers:
             if (father_key, person_key) not in graph_edges:
                 if father_key not in nodes:
-                    f.node(father_key)
+                    label = ''
+                    if people_dict[father_key].forename:
+                        label += people_dict[father_key].forename + ' '
+                    if people_dict[father_key].surname:
+                        label += people_dict[father_key].surname + '\n'
+                    if people_dict[father_key].date_of_birth:
+                        label += people_dict[father_key].date_of_birth + '\n'
+                    if people_dict[father_key].date_of_death:
+                        label += people_dict[father_key].date_of_death
+                    f.node(father_key, label=f"{label}")
                     nodes.add(father_key)
                 f.edge(father_key, person_key, label='', color="green")
                 graph_edges.add((father_key, person_key))
-            draw_all_relatives(f, father_key, flattened_people[father_key], visited, nodes, graph_edges)
+            draw_all_relatives(f, father_key, people_dict[father_key], visited, nodes, graph_edges)
     if person_val.children:
         for child_key in person_val.children:
             if (person_key, child_key) not in graph_edges:
                 if child_key not in nodes:
-                    f.node(child_key)
+                    label = ''
+                    if people_dict[child_key].forename:
+                        label += people_dict[child_key].forename + ' '
+                    if people_dict[child_key].surname:
+                        label += people_dict[child_key].surname + '\n'
+                    if people_dict[child_key].date_of_birth:
+                        label += people_dict[child_key].date_of_birth + '\n'
+                    if people_dict[child_key].date_of_death:
+                        label += people_dict[child_key].date_of_death
+                    f.node(child_key, label=f"{label}")
                     nodes.add(child_key)
                 f.edge(person_key, child_key, label='', color="green")
                 graph_edges.add((person_key, child_key))
-            draw_all_relatives(f, child_key, flattened_people[child_key], visited, nodes, graph_edges)
+            draw_all_relatives(f, child_key, people_dict[child_key], visited, nodes, graph_edges)
 
 
 def get_all_rels(cfib_person, people=[]):
@@ -114,6 +163,12 @@ def get_all_rels(cfib_person, people=[]):
     current_person.surname = cfib_person.find('.//surname', namespaces=ns).text
     current_person.role = cfib_person.find('.//roleName', namespaces=ns).text
     current_person.id = cfib_person.get('{http://www.w3.org/XML/1998/namespace}id')
+    birth_node = cfib_person.find('.//birth', namespaces=ns)
+    death_node = cfib_person.find('.//death', namespaces=ns)
+    if birth_node is not None:
+        current_person.date_of_birth = birth_node.attrib['when']
+    if death_node is not None:
+        current_person.date_of_death = death_node.attrib['when']
     current_person.partners = []
     current_person.mothers = []
     current_person.fathers = []
@@ -190,9 +245,6 @@ for cfib_person in cfib_persons:
 
     trees.update({cfib_person.get('{http://www.w3.org/XML/1998/namespace}id'): people})
 
-    # flatten and dedupe the trees
-    flattened_people = {}
-
     for key, people_list in trees.items():
 
         for curr_person in people_list:
@@ -200,7 +252,7 @@ for cfib_person in cfib_persons:
             canonical_mothers = set()
             canonical_fathers = set()
             canonical_children = set()
-            flattened_people[curr_person.id] = Person()
+            people_dict[curr_person.id] = Person()
             for partner in curr_person.partners:
                 canonical_partners.add(partner)
             for mother in curr_person.mothers:
@@ -209,13 +261,18 @@ for cfib_person in cfib_persons:
                 canonical_fathers.add(father)
             for child in curr_person.children:
                 canonical_children.add(child)
-            flattened_people[curr_person.id].mothers = canonical_mothers
-            flattened_people[curr_person.id].fathers = canonical_fathers
-            flattened_people[curr_person.id].partners = canonical_partners
-            flattened_people[curr_person.id].children = canonical_children
+            people_dict[curr_person.id].forename = curr_person.forename
+            people_dict[curr_person.id].surname = curr_person.surname
+            people_dict[curr_person.id].role = curr_person.role
+            people_dict[curr_person.id].mothers = canonical_mothers
+            people_dict[curr_person.id].fathers = canonical_fathers
+            people_dict[curr_person.id].partners = canonical_partners
+            people_dict[curr_person.id].children = canonical_children
+            people_dict[curr_person.id].date_of_birth = curr_person.date_of_birth
+            people_dict[curr_person.id].date_of_birth = curr_person.date_of_death
 
-    for parent_key, parent_val in flattened_people.items():
-        for child_key, child_val in flattened_people.items():
+    for parent_key, parent_val in people_dict.items():
+        for child_key, child_val in people_dict.items():
             if parent_key != child_key:
                 for el in child_val.fathers:
                     if parent_key in el:
@@ -224,6 +281,6 @@ for cfib_person in cfib_persons:
                     if parent_key in el:
                         parent_val.children.add(child_key)
 
-build_family_tree(flattened_people)
+build_family_tree()
 
 pass

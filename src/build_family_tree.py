@@ -168,7 +168,7 @@ def draw_all_relatives(f, person_key, person_val, visited, nodes, graph_edges, g
 
                     f.edge(mother_key, parentage_key, label='', color="green")
                     graph_edges.add((mother_key, parentage_key))
-                    # graph_edges.add((mother_key, person_key))
+                    graph_edges.add((mother_key, person_key))
 
                     f.edge(father_key, parentage_key, label='', color="green")
                     graph_edges.add((father_key, parentage_key))
@@ -176,7 +176,8 @@ def draw_all_relatives(f, person_key, person_val, visited, nodes, graph_edges, g
                     f.edge(parentage_key, person_key, label='', color="green")
 
                     graph_edges.add((parentage_key, person_key))
-
+                    graph_edges.add((mother_key, person_key))
+                    graph_edges.add((father_key, person_key))
 
 
                 if mother_key not in generation_map:

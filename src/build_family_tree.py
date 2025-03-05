@@ -1,7 +1,9 @@
 from typing import Optional
 
 from graphviz import Digraph
-import xml.etree.ElementTree as ET
+
+from lxml import etree
+
 import argparse
 
 class Person:
@@ -27,7 +29,7 @@ parser.add_argument("-f", "--filename", help="enter the path to the XML you want
 parser.add_argument("-np", "--no-partners", action=argparse.BooleanOptionalAction, help="use this flag if you want to omit drawing the partner links")
 args = parser.parse_args()
 
-xml_tree = ET.parse(args.filename)
+xml_tree = etree.parse(args.filename)
 
 ns = {'': "http://www.tei-c.org/ns/1.0",
       'xml': "http://www.w3.org/XML/1998/namespace"

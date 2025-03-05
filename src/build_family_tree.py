@@ -1,7 +1,5 @@
 from typing import Optional
-
 from graphviz import Digraph
-
 from lxml import etree
 
 import argparse
@@ -73,16 +71,7 @@ def draw_all_relatives(f, person_key, person_val, visited, nodes, graph_edges, g
     if person_key in visited:
         return
     if person_key not in nodes:
-        label = ''
-        if people_dict[person_key].forename:
-            label += people_dict[person_key].forename + ' '
-        if people_dict[person_key].surname:
-            label += people_dict[person_key].surname + '\n'
-        if people_dict[person_key].date_of_birth:
-            label += 'DOB: ' + people_dict[person_key].date_of_birth + '\n'
-        if people_dict[person_key].date_of_death:
-            label += 'DOD: ' + people_dict[person_key].date_of_death
-
+        label, _ = create_label(main_person_id, person_key)
         f.node(person_key, label=f"{label}", color='red')
         nodes.add(person_key)
 
@@ -96,22 +85,7 @@ def draw_all_relatives(f, person_key, person_val, visited, nodes, graph_edges, g
         if person_val.partners:
             for partner_key in person_val.partners:
                 if (person_key, partner_key) not in graph_edges and (partner_key, person_key) not in graph_edges:
-                    if partner_key not in nodes:
-                        label = ''
-                        if people_dict[partner_key].forename:
-                            label += people_dict[partner_key].forename + ' '
-                        if people_dict[partner_key].surname:
-                            label += people_dict[partner_key].surname + ' '
-                        if people_dict[partner_key].date_of_birth:
-                            label += 'DOB: ' + people_dict[partner_key].date_of_birth + ' '
-                        if people_dict[partner_key].date_of_death:
-                            label += 'DOD: ' + people_dict[partner_key].date_of_death
-                        if partner_key != main_person_id:
-                            node_colour = colours[people_dict[partner_key].gender]
-                        else:
-                            node_colour = 'red'
-                        f.node(partner_key, label=f"{label}", color=node_colour)
-                        nodes.add(partner_key)
+                    create_node(f, main_person_id, nodes, partner_key)
 
                     with f.subgraph(name=f'cluster_{generation}') as sub:
                         f.edge(person_key, partner_key, label='', arrowhead="none", color="black")
@@ -137,38 +111,8 @@ def draw_all_relatives(f, person_key, person_val, visited, nodes, graph_edges, g
             for father_key in person_val.fathers:
                 parentage_key = f'parentage_{mother_key}_{father_key}'
                 if (mother_key, parentage_key) not in graph_edges and (father_key, person_key) not in graph_edges:
-                    if mother_key not in nodes:
-                        label = ''
-                        if people_dict[mother_key].forename:
-                            label += people_dict[mother_key].forename + ' '
-                        if people_dict[mother_key].surname:
-                            label += people_dict[mother_key].surname + ' '
-                        if people_dict[mother_key].date_of_birth:
-                            label += 'DOB: ' + people_dict[mother_key].date_of_birth + ' '
-                        if people_dict[mother_key].date_of_death:
-                            label += 'DOD: ' + people_dict[mother_key].date_of_death
-                        if mother_key != main_person_id:
-                            node_colour = colours[people_dict[mother_key].gender]
-                        else:
-                            node_colour = 'red'
-                        f.node(mother_key, label=f"{label}", color=node_colour)
-                        nodes.add(mother_key)
-                    if father_key not in nodes:
-                        label = ''
-                        if people_dict[father_key].forename:
-                            label += people_dict[father_key].forename + ' '
-                        if people_dict[father_key].surname:
-                            label += people_dict[father_key].surname + ' '
-                        if people_dict[father_key].date_of_birth:
-                            label += 'DOB: ' + people_dict[father_key].date_of_birth + ' '
-                        if people_dict[father_key].date_of_death:
-                            label += 'DOD: ' + people_dict[father_key].date_of_death
-                        if father_key != main_person_id:
-                            node_colour = colours[people_dict[father_key].gender]
-                        else:
-                            node_colour = 'red'
-                        f.node(father_key, label=f"{label}", color=node_colour)
-                        nodes.add(father_key)
+                    create_node(f, main_person_id, nodes, mother_key)
+                    create_node(f, main_person_id, nodes, father_key)
 
                     f.node(parentage_key, label='', shape='ellipse', width='0.2', height='0.2')
                     nodes.add(parentage_key)
@@ -214,22 +158,7 @@ def draw_all_relatives(f, person_key, person_val, visited, nodes, graph_edges, g
             for mother_key in person_val.mothers:
                 if (mother_key, person_key) not in graph_edges:
 
-                    if mother_key not in nodes:
-                        label = ''
-                        if people_dict[mother_key].forename:
-                            label += people_dict[mother_key].forename + ' '
-                        if people_dict[mother_key].surname:
-                            label += people_dict[mother_key].surname + ' '
-                        if people_dict[mother_key].date_of_birth:
-                            label += 'DOB: ' + people_dict[mother_key].date_of_birth + ' '
-                        if people_dict[mother_key].date_of_death:
-                            label += 'DOD: ' + people_dict[mother_key].date_of_death
-                        if mother_key != main_person_id:
-                            node_colour = colours[people_dict[mother_key].gender]
-                        else:
-                            node_colour = 'red'
-                        f.node(mother_key, label=f"{label}", color=node_colour)
-                        nodes.add(mother_key)
+                    create_node(f, main_person_id, nodes, mother_key)
                     f.edge(mother_key, person_key, label='', color="green")
                     graph_edges.add((mother_key, person_key))
                 if mother_key not in generation_map:
@@ -250,22 +179,7 @@ def draw_all_relatives(f, person_key, person_val, visited, nodes, graph_edges, g
             for father_key in person_val.fathers:
                 if (father_key, person_key) not in graph_edges:
 
-                    if father_key not in nodes:
-                        label = ''
-                        if people_dict[father_key].forename:
-                            label += people_dict[father_key].forename + ' '
-                        if people_dict[father_key].surname:
-                            label += people_dict[father_key].surname + ' '
-                        if people_dict[father_key].date_of_birth:
-                            label += 'DOB: ' + people_dict[father_key].date_of_birth + ' '
-                        if people_dict[father_key].date_of_death:
-                            label += 'DOD: ' + people_dict[father_key].date_of_death
-                        if father_key != main_person_id:
-                            node_colour = colours[people_dict[father_key].gender]
-                        else:
-                            node_colour = 'red'
-                        f.node(father_key, label=f"{label}", color=node_colour)
-                        nodes.add(father_key)
+                    create_node(f, main_person_id, nodes, father_key)
                     f.edge(father_key, person_key, label='', color="green")
                     graph_edges.add((father_key, person_key))
                 if father_key not in generation_map:
@@ -286,22 +200,7 @@ def draw_all_relatives(f, person_key, person_val, visited, nodes, graph_edges, g
     if person_val.children:
         for child_key in person_val.children:
             if (person_key, child_key) not in graph_edges:
-                if child_key not in nodes:
-                    label = ''
-                    if people_dict[child_key].forename:
-                        label += people_dict[child_key].forename + ' '
-                    if people_dict[child_key].surname:
-                        label += people_dict[child_key].surname + ' '
-                    if people_dict[child_key].date_of_birth:
-                        label += 'DOB: ' + people_dict[child_key].date_of_birth + ' '
-                    if people_dict[child_key].date_of_death:
-                        label += 'DOD: ' + people_dict[child_key].date_of_death
-                    if child_key != main_person_id:
-                        node_colour = colours[people_dict[child_key].gender]
-                    else:
-                        node_colour = 'red'
-                    f.node(child_key, label=f"{label}", color=node_colour)
-                    nodes.add(child_key)
+                create_node(f, main_person_id, nodes, child_key)
                 if not person_val.partners:
                     f.edge(person_key, child_key, label='', color="green")
                     graph_edges.add((person_key, child_key))
@@ -319,6 +218,32 @@ def draw_all_relatives(f, person_key, person_val, visited, nodes, graph_edges, g
 
             draw_all_relatives(f, child_key, people_dict[child_key], visited, nodes, graph_edges, generation_map,
                                main_person_id)
+
+
+def create_node(f, main_person_id, nodes, curr_pers_key):
+    if curr_pers_key not in nodes:
+        label, node_colour = create_label(main_person_id, curr_pers_key)
+        f.node(curr_pers_key, label=f"{label}", color=node_colour)
+        nodes.add(curr_pers_key)
+
+
+def create_label(main_person_id, curr_person_to_label):
+    label = ''
+    person = people_dict[curr_person_to_label]
+
+    if person.forename:
+        label += person.forename + ' '
+    if person.surname:
+        label += person.surname + ' '
+    if person.date_of_birth:
+        label += 'DOB: ' + person.date_of_birth + ' '
+    if person.date_of_death:
+        label += 'DOD: ' + person.date_of_death
+    if curr_person_to_label != main_person_id:
+        node_colour = colours[person.gender]
+    else:
+        node_colour = 'red'
+    return label, node_colour
 
 
 def get_all_rels(cfib_person, people=[]):

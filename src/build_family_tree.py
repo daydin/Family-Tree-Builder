@@ -4,6 +4,7 @@ from lxml import etree
 
 import argparse
 
+
 class Person:
     def __init__(self, mothers: Optional[list] = [], fathers: Optional[list] = [], partners: Optional[list] = [],
                  children: Optional[list] = None, gender: Optional[str] = None, forename: Optional[str] = None,
@@ -22,9 +23,11 @@ class Person:
         self.date_of_birth = date_of_birth
         self.date_of_death = date_of_death
 
+
 parser = argparse.ArgumentParser()
 parser.add_argument("-f", "--filename", help="enter the path to the XML you want parsed")
-parser.add_argument("-np", "--no-partners", action=argparse.BooleanOptionalAction, help="use this flag if you want to omit drawing the partner links")
+parser.add_argument("-np", "--no-partners", action=argparse.BooleanOptionalAction,
+                    help="use this flag if you want to omit drawing the partner links")
 args = parser.parse_args()
 
 xml_tree = etree.parse(args.filename)
@@ -52,7 +55,7 @@ def build_family_tree():
 
     for person_key, person_val in people_dict.items():
         f = Digraph('neato', format='pdf', encoding='utf8', directory='family_trees',
-                    filename=f'{person_key}_family_tree_2',
+                    filename=f'{person_key}_family_tree',
                     node_attr={'color': 'lightblue2', 'style': 'filled'}, strict=True)
         f.attr('node', shape='box')
         f.attr(newrank="true")
@@ -80,7 +83,7 @@ def draw_all_relatives(f, person_key, person_val, visited, nodes, graph_edges, g
 
     if person_key not in generation_map:
         generation_map[person_key] = generation
-
+    person = people_dict[person_key]
     if not args.no_partners:
         if person_val.partners:
             for partner_key in person_val.partners:
@@ -94,7 +97,7 @@ def draw_all_relatives(f, person_key, person_val, visited, nodes, graph_edges, g
                         sub.attr(rank="same")
                         sub.attr(style="invis")
                         if person_key != main_person_id:
-                            node_colour = colours[people_dict[person_key].gender]
+                            node_colour = colours[person.gender]
                         else:
                             node_colour = 'red'
                         sub.node(person_key, color=node_colour)
@@ -104,7 +107,8 @@ def draw_all_relatives(f, person_key, person_val, visited, nodes, graph_edges, g
                             node_colour = 'red'
                         sub.node(partner_key, color=node_colour)
                 generation_map[partner_key] = generation
-                draw_all_relatives(f, partner_key, people_dict[partner_key], visited, nodes, graph_edges, generation_map,
+                draw_all_relatives(f, partner_key, people_dict[partner_key], visited, nodes, graph_edges,
+                                   generation_map,
                                    main_person_id)
     if person_val.mothers and person_val.fathers:
         for mother_key in person_val.mothers:
@@ -142,7 +146,7 @@ def draw_all_relatives(f, person_key, person_val, visited, nodes, graph_edges, g
                     sub.attr(rank="same")
                     sub.attr(style="invis")
                     if person_key != main_person_id:
-                        node_colour = colours[people_dict[person_key].gender]
+                        node_colour = colours[person.gender]
                     else:
                         node_colour = 'red'
                     sub.node(person_key, color=node_colour)
@@ -156,7 +160,6 @@ def draw_all_relatives(f, person_key, person_val, visited, nodes, graph_edges, g
         if person_val.mothers and not person_val.fathers:
             for mother_key in person_val.mothers:
                 if (mother_key, person_key) not in graph_edges:
-
                     create_node(f, main_person_id, nodes, mother_key)
                     f.edge(mother_key, person_key, label='', color="green")
                     graph_edges.add((mother_key, person_key))
@@ -167,7 +170,7 @@ def draw_all_relatives(f, person_key, person_val, visited, nodes, graph_edges, g
                     sub.attr(rank="same")
                     sub.attr(style="invis")
                     if person_key != main_person_id:
-                        node_colour = colours[people_dict[person_key].gender]
+                        node_colour = colours[person.gender]
                     else:
                         node_colour = 'red'
                     sub.node(person_key, color=node_colour)
@@ -177,7 +180,6 @@ def draw_all_relatives(f, person_key, person_val, visited, nodes, graph_edges, g
         if person_val.fathers and not person_val.mothers:
             for father_key in person_val.fathers:
                 if (father_key, person_key) not in graph_edges:
-
                     create_node(f, main_person_id, nodes, father_key)
                     f.edge(father_key, person_key, label='', color="green")
                     graph_edges.add((father_key, person_key))
@@ -188,7 +190,7 @@ def draw_all_relatives(f, person_key, person_val, visited, nodes, graph_edges, g
                     sub.attr(rank="same")
                     sub.attr(style="invis")
                     if person_key != main_person_id:
-                        node_colour = colours[people_dict[person_key].gender]
+                        node_colour = colours[person.gender]
                     else:
                         node_colour = 'red'
                     sub.node(person_key, color=node_colour)

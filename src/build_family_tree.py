@@ -2,6 +2,7 @@ from typing import Optional
 
 from graphviz import Digraph
 import xml.etree.ElementTree as ET
+import argparse
 
 class Person:
     def __init__(self, mothers: Optional[list] = [], fathers: Optional[list] = [], partners: Optional[list] = [],
@@ -21,8 +22,12 @@ class Person:
         self.date_of_birth = date_of_birth
         self.date_of_death = date_of_death
 
+parser = argparse.ArgumentParser()
+parser.add_argument("-f", "--filename", help="enter the path to the XML you want parsed")
+parser.add_argument("-np", "--no-partners", action=argparse.BooleanOptionalAction, help="use this flag if you want to omit drawing the partner links")
+args = parser.parse_args()
 
-xml_tree = ET.parse('../data/CFIB_GenealogyData_final.xml')
+xml_tree = ET.parse(args.filename)
 
 ns = {'': "http://www.tei-c.org/ns/1.0",
       'xml': "http://www.w3.org/XML/1998/namespace"
@@ -85,45 +90,46 @@ def draw_all_relatives(f, person_key, person_val, visited, nodes, graph_edges, g
     if person_key not in generation_map:
         generation_map[person_key] = generation
 
-    if person_val.partners:
-        for partner_key in person_val.partners:
-            if (person_key, partner_key) not in graph_edges and (partner_key, person_key) not in graph_edges:
-                if partner_key not in nodes:
-                    label = ''
-                    if people_dict[partner_key].forename:
-                        label += people_dict[partner_key].forename + ' '
-                    if people_dict[partner_key].surname:
-                        label += people_dict[partner_key].surname + ' '
-                    if people_dict[partner_key].date_of_birth:
-                        label += 'DOB: ' + people_dict[partner_key].date_of_birth + ' '
-                    if people_dict[partner_key].date_of_death:
-                        label += 'DOD: ' + people_dict[partner_key].date_of_death
-                    if partner_key != main_person_id:
-                        node_colour = colours[people_dict[partner_key].gender]
-                    else:
-                        node_colour = 'red'
-                    f.node(partner_key, label=f"{label}", color=node_colour)
-                    nodes.add(partner_key)
+    if not args.no_partners:
+        if person_val.partners:
+            for partner_key in person_val.partners:
+                if (person_key, partner_key) not in graph_edges and (partner_key, person_key) not in graph_edges:
+                    if partner_key not in nodes:
+                        label = ''
+                        if people_dict[partner_key].forename:
+                            label += people_dict[partner_key].forename + ' '
+                        if people_dict[partner_key].surname:
+                            label += people_dict[partner_key].surname + ' '
+                        if people_dict[partner_key].date_of_birth:
+                            label += 'DOB: ' + people_dict[partner_key].date_of_birth + ' '
+                        if people_dict[partner_key].date_of_death:
+                            label += 'DOD: ' + people_dict[partner_key].date_of_death
+                        if partner_key != main_person_id:
+                            node_colour = colours[people_dict[partner_key].gender]
+                        else:
+                            node_colour = 'red'
+                        f.node(partner_key, label=f"{label}", color=node_colour)
+                        nodes.add(partner_key)
 
-                with f.subgraph(name=f'cluster_{generation}') as sub:
-                    f.edge(person_key, partner_key, label='', arrowhead="none", color="black")
-                    graph_edges.add((person_key, partner_key))
-                    graph_edges.add((partner_key, person_key))
-                    sub.attr(rank="same")
-                    sub.attr(style="invis")
-                    if person_key != main_person_id:
-                        node_colour = colours[people_dict[person_key].gender]
-                    else:
-                        node_colour = 'red'
-                    sub.node(person_key, color=node_colour)
-                    if partner_key != main_person_id:
-                        node_colour = colours[people_dict[partner_key].gender]
-                    else:
-                        node_colour = 'red'
-                    sub.node(partner_key, color=node_colour)
-            generation_map[partner_key] = generation
-            draw_all_relatives(f, partner_key, people_dict[partner_key], visited, nodes, graph_edges, generation_map,
-                               main_person_id)
+                    with f.subgraph(name=f'cluster_{generation}') as sub:
+                        f.edge(person_key, partner_key, label='', arrowhead="none", color="black")
+                        graph_edges.add((person_key, partner_key))
+                        graph_edges.add((partner_key, person_key))
+                        sub.attr(rank="same")
+                        sub.attr(style="invis")
+                        if person_key != main_person_id:
+                            node_colour = colours[people_dict[person_key].gender]
+                        else:
+                            node_colour = 'red'
+                        sub.node(person_key, color=node_colour)
+                        if partner_key != main_person_id:
+                            node_colour = colours[people_dict[partner_key].gender]
+                        else:
+                            node_colour = 'red'
+                        sub.node(partner_key, color=node_colour)
+                generation_map[partner_key] = generation
+                draw_all_relatives(f, partner_key, people_dict[partner_key], visited, nodes, graph_edges, generation_map,
+                                   main_person_id)
     if person_val.mothers and person_val.fathers:
         for mother_key in person_val.mothers:
             for father_key in person_val.fathers:

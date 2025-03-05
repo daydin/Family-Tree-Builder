@@ -52,7 +52,7 @@ def build_family_tree():
 
     for person_key, person_val in people_dict.items():
         f = Digraph('neato', format='pdf', encoding='utf8', directory='family_trees',
-                    filename=f'{person_key}_family_tree',
+                    filename=f'{person_key}_family_tree_2',
                     node_attr={'color': 'lightblue2', 'style': 'filled'}, strict=True)
         f.attr('node', shape='box')
         f.attr(newrank="true")
@@ -127,8 +127,7 @@ def draw_all_relatives(f, person_key, person_val, visited, nodes, graph_edges, g
                     f.edge(parentage_key, person_key, label='', color="green")
 
                     graph_edges.add((parentage_key, person_key))
-                    graph_edges.add((mother_key, person_key))
-                    graph_edges.add((father_key, person_key))
+
 
                 else:
                     f.edge(parentage_key, person_key, label='', color="green")

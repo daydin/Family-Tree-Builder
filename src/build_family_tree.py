@@ -55,7 +55,7 @@ def build_family_tree():
 
     for person_key, person_val in people_dict.items():
         f = Digraph('neato', format='pdf', encoding='utf8', directory='family_trees',
-                    filename=f'{person_key}_family_tree',
+                    filename=f'{person_key}_family_tree_NEW',
                     node_attr={'color': 'lightblue2', 'style': 'filled'}, strict=True)
         f.attr('node', shape='box')
         f.attr(newrank="true")
@@ -63,8 +63,8 @@ def build_family_tree():
         # if person_key == 'CFIB00169' or person_key == 'CFIB00245' or person_key == 'CFIB00762':
         # if person_key == 'CFIB00687':
         draw_all_relatives(f, person_key, person_val, set(), set(), set(), {}, person_key)
-        f.view()
-    # one_tree.render(filename=f'{cfib_person.id}_family_tree', directory='./family_trees', cleanup=True)
+        # f.view()
+        f.render(filename=f'{person_key}_family_tree_NEW', directory='./family_trees', cleanup=True)
 
 
 def draw_all_relatives(f, person_key, person_val, visited, nodes, graph_edges, generation_map, main_person_id):

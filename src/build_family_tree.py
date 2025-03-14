@@ -65,7 +65,7 @@ def build_family_tree():
         draw_all_relatives(f, person_key, person_val, set(), set(), set(), {}, person_key)
         # f.view()
         f.render(filename=f'{person_key}_family_tree', directory='./family_trees', cleanup=True)
-
+        f.save()
 
 def draw_all_relatives(f, person_key, person_val, visited, nodes, graph_edges, generation_map, main_person_id):
     if visited is None:

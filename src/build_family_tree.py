@@ -64,7 +64,7 @@ def build_family_tree():
         # if person_key == 'CFIB00687':
         draw_all_relatives(f, person_key, person_val, set(), set(), set(), {}, person_key)
         # f.view()
-        f.render(filename=f'{person_key}_family_tree_NEW', directory='./family_trees', cleanup=True)
+        f.render(filename=f'{person_key}_family_tree', directory='./family_trees', cleanup=True)
 
 
 def draw_all_relatives(f, person_key, person_val, visited, nodes, graph_edges, generation_map, main_person_id):

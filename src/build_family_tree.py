@@ -61,9 +61,9 @@ def build_family_tree():
         f.attr(newrank="true")
         f.attr(concentrate="true")
         # if person_key == 'CFIB00169' or person_key == 'CFIB00245' or person_key == 'CFIB00762':
-        if person_key == 'CFIB00687':
-            draw_all_relatives(f, person_key, person_val, set(), set(), set(), {}, person_key)
-            f.view()
+        # if person_key == 'CFIB00687':
+        draw_all_relatives(f, person_key, person_val, set(), set(), set(), {}, person_key)
+        f.view()
     # one_tree.render(filename=f'{cfib_person.id}_family_tree', directory='./family_trees', cleanup=True)
 
 
